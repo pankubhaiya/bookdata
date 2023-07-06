@@ -8,7 +8,7 @@ bookRouter.use(express.json())
 bookRouter.post("/addbook", async (req, res) => {
     
     try {
-        console.log("in")
+      
         let data = new bookmodel({...req.body})
         await data.save()
         res.send({ok:true,message:"adddata succesfull"})
@@ -39,19 +39,11 @@ bookRouter.get("/filter/:Genre", async (req, res) => {
 })
 
 
-bookRouter.get('/sort/:odr', async (req, res) => {
-    const odr = req.params.odr;
-    let value;
-  
+bookRouter.get('/sort/:order', async (req, res) => {
     try {
-        if(odr == "ASC"){
-            value = 1;
-        }
-        else if (odr == "DESC"){
-            value = -1;
-        }
-      const data = await bookmodel.find().sort({price: value});
-      res.send({ok:true,message:data})
+        const order = req.params.order == "asc" ? 1:-1
+        let book = await bookmodel.aggregate([{$sort:{Pric:order}}]);
+        res.status(201).send({ok: true, message:book});
     } catch (error) {
       console.error(error);
       res.send({ok:false,message:error.message})
@@ -67,7 +59,7 @@ bookRouter.delete("/deletebook/:id", async (req, res) => {
         let data = await bookmodel.findByIdAndDelete({_id:req.params.id})
         res.send({ok:true,message:"Delete done"})
     } catch (err) {
-        res.send({ok:false,message:error.message})
+        res.send({ok:false,message:err.message})
     }
 })
 
